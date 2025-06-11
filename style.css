@@ -1,0 +1,79 @@
+/* Configuração global */
+body {
+  margin: 0;
+  background-color: #0a0a14;
+  color: #fff;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Cabeçalho */
+header {
+  text-align: center;
+  padding: 20px;
+  background: linear-gradient(to right, #1a1a2e, #16213e);
+  color: gold;
+  font-size: 28px;
+}
+
+/* Container do mapa */
+#map-container {
+  position: relative;
+  max-width: 1000px;
+  margin: 20px auto;
+}
+
+/* Imagem do mapa */
+#map {
+  width: 100%;
+  border-radius: 12px;
+  border: 3px solid #333;
+}
+
+/* Botões clicáveis sobre o mapa */
+.region {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* Efeito hover nos pontos do mapa */
+.region:hover {
+  border-color: gold;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Acessibilidade: foco pelo teclado */
+.region:focus {
+  outline: 2px solid gold;
+}
+
+/* Listas dentro da caixa de informações */
+#region-content ul {
+  list-style: square;
+  margin-left: 20px;
+  margin-top: 10px;
+}
+
+#region-content li {
+  margin-bottom: 4px;
+}
+
+/* Caixa de informações exibida ao clicar em uma região */
+#info-box {
+  margin: 20px auto;
+  max-width: 1000px;
+  background: #1e1e2e;
+  border-radius: 10px;
+  padding: 20px;
+  border: 1px solid #444;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* Título na caixa de informações */
+#region-content h2 {
+  margin-top: 0;
+}
