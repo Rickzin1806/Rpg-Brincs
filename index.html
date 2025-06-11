@@ -8,25 +8,256 @@
 </head>
 <body>
 
-  <header>🌍 Mapa de Elyndor</header>
+  <header>
+    <h1>🌟 Mundo RPG Interativo</h1>
+    <div id="goldDisplay">💰 Ouro: <span id="gold">0</span> | ⭐ Reputação: <span id="reputation">0</span></div>
+  </header>
 
-  <div id="map-container">
-    <img id="map" src="Mapa.png" alt="Mapa de Elyndor">
+  <nav>
+    <button onclick="showSection('map')">🗺️ Mapa</button>
+    <button onclick="showSection('characters')">👤 Criar Personagem</button>
+    <button onclick="showSection('quests')">📦 Missões</button>
+  </nav>
 
-    <!-- Posições das regiões no mapa -->
-    <div class="region" style="top: 20%; left: 30%;" onclick="showRegion('Castelo Sombrio')"></div>
-    <div class="region" style="top: 50%; left: 60%;" onclick="showRegion('Ruínas Antigas')"></div>
-    <div class="region" style="top: 70%; left: 40%;" onclick="showRegion('Templo Esquecido')"></div>
-    <div class="region" style="top: 35%; left: 70%;" onclick="showRegion('Cidade Dourada')"></div>
-  </div>
+  <main>
+    <section id="map" class="active">
+      <div id="map-container">
+        <img id="map-img" src="Mapa.png" alt="Mapa de Elyndor">
+        <div class="region" style="top: 20%; left: 30%;" onclick="showRegion('Castelo Sombrio')"></div>
+        <div class="region" style="top: 50%; left: 60%;" onclick="showRegion('Ruínas Antigas')"></div>
+        <div class="region" style="top: 70%; left: 40%;" onclick="showRegion('Templo Esquecido')"></div>
+        <div class="region" style="top: 35%; left: 70%;" onclick="showRegion('Cidade Dourada')"></div>
+      </div>
+      <div id="info-box">
+        <div id="region-content"></div>
+      </div>
+    </section>
 
-  <div id="info-box">
-    <div id="region-content"></div>
-  </div>
+    <section id="characters">
+      <h2>👤 Criar Personagem</h2>
+      <form id="characterForm">
+        <div>
+          <label for="charName">Nome:</label>
+          <input type="text" id="charName" required>
+        </div>
+        <div>
+          <label for="charClass">Classe:</label>
+          <select id="charClass">
+            <option>Mago</option>
+            <option>Guerreiro</option>
+            <option>Arqueiro</option>
+            <option>Ladrão</option>
+            <option>Cavaleiro</option>
+          </select>
+        </div>
+        <div>
+          <label for="charRace">Raça:</label>
+          <select id="charRace">
+            <option>Humano</option>
+            <option>Elfo</option>
+            <option>Anão</option>
+            <option>Orc</option>
+            <option>Demônio</option>
+          </select>
+        </div>
+        <button type="submit">Criar Personagem</button>
+      </form>
+      <div id="characterList"></div>
+    </section>
+
+    <section id="quests">
+      <h2>📦 Missões</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Missão</th>
+            <th>Descrição</th>
+            <th>Ação</th>
+            <th>Recarga</th>
+          </tr>
+        </thead>
+        <tbody id="questTable"></tbody>
+      </table>
+    </section>
+  </main>
 
   <script>
-    // conteúdo do seu script aqui (como está no seu código atual)
-  </script>
+    const regioes = {
+      'Castelo Sombrio': {
+        descricao: 'Um castelo cercado por névoa eterna. Ideal para encontrar armas raras.',
+        missoes: ['Caçar o Lorde das Sombras', 'Libertar o prisioneiro'],
+        guildas: ['Guardas da Noite'],
+        armas: ['Espada Abissal', 'Armadura das Sombras'],
+        loja: ['Poção de Sombra - 300🪙']
+      },
+      'Ruínas Antigas': {
+        descricao: 'Ruínas onde o tempo parou. Perfeitas para missões arqueológicas.',
+        missoes: ['Investigar ruínas mágicas', 'Derrotar o Guardião Antigo'],
+        guildas: ['Exploradores de Elyndor'],
+        armas: ['Cajado do Tempo', 'Adaga Rúnica'],
+        loja: ['Elixir de Resistência - 200🪙']
+      },
+      'Templo Esquecido': {
+        descricao: 'Local sagrado e misterioso, cheio de recompensas ocultas.',
+        missoes: ['Restaurar o altar', 'Derrotar o espírito guardião'],
+        guildas: ['Ordem Celestial'],
+        armas: ['Lança Sagrada', 'Escudo de Luz'],
+        loja: ['Poção de Luz - 500🪙']
+      },
+      'Cidade Dourada': {
+        descricao: 'A capital de Elyndor, cheia de comércio e torneios.',
+        missoes: ['Vencer o torneio de elite', 'Roubar o colar real'],
+        guildas: ['Mercadores de Aurium'],
+        armas: ['Espada Real', 'Arco Dourado'],
+        loja: ['Poção Suprema - 1000🪙']
+      }
+    };
 
+    let characters = JSON.parse(localStorage.getItem('rpgCharacters')) || [];
+    let activeCharacter = null;
+    const cooldownTime = 300000; // 5 minutos
+
+    function saveCharacters() {
+      localStorage.setItem('rpgCharacters', JSON.stringify(characters));
+    }
+
+    function updateGoldDisplay() {
+      document.getElementById('gold').textContent = activeCharacter ? activeCharacter.gold : 0;
+      document.getElementById('reputation').textContent = activeCharacter ? activeCharacter.reputation : 0;
+    }
+
+    function updateGold(amount) {
+      if (!activeCharacter) return;
+      activeCharacter.gold += amount;
+      updateGoldDisplay();
+      saveCharacters();
+    }
+
+    function updateReputation(amount) {
+      if (!activeCharacter) return;
+      activeCharacter.reputation += amount;
+      updateGoldDisplay();
+      saveCharacters();
+    }
+
+    function showSection(id) {
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    document.getElementById('characterForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const name = document.getElementById('charName').value;
+      const classe = document.getElementById('charClass').value;
+      const race = document.getElementById('charRace').value;
+      const newChar = { name, classe, race, inventory: [], gold: 100, reputation: 0, cooldowns: {} };
+      characters.push(newChar);
+      activeCharacter = newChar;
+      saveCharacters();
+      renderCharacters();
+      updateGoldDisplay();
+      renderQuests();
+    });
+
+    function renderCharacters() {
+      const list = document.getElementById('characterList');
+      list.innerHTML = '';
+      characters.forEach((char, index) => {
+        const btn = document.createElement('button');
+        btn.innerText = `${char.name} - ${char.classe} ${char.race}`;
+        btn.onclick = () => {
+          activeCharacter = characters[index];
+          updateGoldDisplay();
+          renderQuests();
+          alert(`Personagem ativo: ${char.name}`);
+        };
+        list.appendChild(btn);
+      });
+    }
+
+    function renderQuests() {
+      const questTable = document.getElementById('questTable');
+      questTable.innerHTML = '';
+      for (let i = 1; i <= 10; i++) {
+        const tr = document.createElement('tr');
+        const reward = 10 + (i % 20);
+        const id = `q${i}`;
+        const now = Date.now();
+        const cooldown = activeCharacter?.cooldowns?.[id] || 0;
+        const remaining = cooldown > now ? cooldown - now : 0;
+
+        const tdCooldown = document.createElement('td');
+        const tdButton = document.createElement('td');
+
+        tdCooldown.id = `cd-${id}`;
+        tdCooldown.textContent = remaining > 0 ? formatCooldown(remaining) : 'Pronto';
+
+        const btn = document.createElement('button');
+        btn.textContent = remaining > 0 ? 'Aguardando...' : `Fazer (+${reward}🪙)`;
+        btn.disabled = remaining > 0;
+        btn.onclick = () => completeQuest(id, reward);
+        tdButton.appendChild(btn);
+
+        tr.innerHTML = `<td>Missão ${i}</td><td>Desafio número ${i}</td>`;
+        tr.appendChild(tdButton);
+        tr.appendChild(tdCooldown);
+        questTable.appendChild(tr);
+
+        if (remaining > 0) startCooldownTimer(id, remaining);
+      }
+    }
+
+    function completeQuest(id, reward) {
+      if (!activeCharacter) return;
+      const now = Date.now();
+      activeCharacter.cooldowns[id] = now + cooldownTime;
+      updateGold(reward);
+      updateReputation(1);
+      saveCharacters();
+      renderQuests();
+    }
+
+    function startCooldownTimer(id, timeLeft) {
+      const interval = setInterval(() => {
+        timeLeft -= 1000;
+        const td = document.getElementById(`cd-${id}`);
+        if (td) td.textContent = formatCooldown(timeLeft);
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          renderQuests();
+        }
+      }, 1000);
+    }
+
+    function formatCooldown(ms) {
+      const totalSec = Math.floor(ms / 1000);
+      const min = Math.floor(totalSec / 60);
+      const sec = totalSec % 60;
+      return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    function showRegion(nome) {
+      const r = regioes[nome];
+      if (!r) return;
+      const html = `
+        <h2>${nome}</h2>
+        <p>${r.descricao}</p>
+        <ul>
+          <li><strong>Missões:</strong> ${r.missoes.join(', ')}</li>
+          <li><strong>Guildas:</strong> ${r.guildas.join(', ')}</li>
+          <li><strong>Armas:</strong> ${r.armas.join(', ')}</li>
+          <li><strong>Loja:</strong> ${r.loja.join(', ')}</li>
+        </ul>
+      `;
+      document.getElementById('region-content').innerHTML = html;
+    }
+
+    renderCharacters();
+    if (characters.length > 0) {
+      activeCharacter = characters[0];
+      updateGoldDisplay();
+      renderQuests();
+    }
+  </script>
 </body>
 </html>
